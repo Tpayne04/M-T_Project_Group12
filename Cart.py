@@ -4,10 +4,9 @@ import Inventory
 class Cart:
 
 
-    def __init__(self, databaseName = "CartClass.db", inventoryDatabase = "Inventory.db", tableName = "Cart"):
+    def __init__(self, databaseName = "CartClass.db", tableName = "Cart"):
         self.databaseName = databaseName
         self.tableName = tableName
-        self.inventoryDatabase = inventoryDatabase
     
 
     # Zero constructor. Nothing needs to be initialized here, but it allows for the functions to be used.
@@ -21,7 +20,7 @@ class Cart:
         self.connection = sqlite3.connect(r"C:\Users\cader\OneDrive\Documents\Project\CartClass.db")
         self.cursor = self.connection.cursor()
         self.create_table()
-        query = f"CREATE TABLE IF NOT EXISTS {self.tableName} (UserID INTEGER, ProductID TEXT, Quantity INTEGER)"
+        query = f"CREATE TABLE IF NOT EXISTS {self.tableName} (UserID INTEGER, ProductID TEXT, ProductQuantity INTEGER)"
         self.cursor.execute(query)
         self.connection.commit()
 
@@ -63,22 +62,22 @@ class Cart:
     # this ISBN is used to remove an item form the user's cart
     def removeFromCart(self, userID, ProductID, ProductQuantity):
         try:
-            productID = input("Enter the ProductID of the book you want to remove from the cart: ")
+            ProductID = input("Enter the ProductID of the book you want to remove from the cart: ")
             ProductQuantity = int(input(f"How many units of ProductID {ProductID} do you want to remove from the cart? "))
         except ValueError:
             print("Please enter a valid number for the quantity.")
             return
         
         query = f"DELETE FROM {self.tableName} WHERE UserID = ? AND ProductID = ? AND Quantity = ?"
-        self.cursor.execute(query, (userID, productID, ProductQuantity))
+        self.cursor.execute(query, (userID, ProductID, ProductQuantity))
         self.connection.commit()
-        print(f"ProductID {productID} was removed from the cart for the user {userID}.")
+        print(f"ProductID {ProductID} was removed from the cart for the user {userID}.")
 
 
     # The user checks out - this removes all their cart items. It also calls the inventory class function
     # to decrease the stock of the books by the correct amount the user bought (prior to remove them from the cart)
     def checkOut(self, userID):
-        querySelect = f"SELECT * FROM {self.cartTableName} WHERE UserID = ?"
+        querySelect = f"SELECT * FROM {self.tableName} WHERE UserID = ?"
         self.cursor.execute(querySelect, (userID,))
         cartItems = self.cursor.fetchall()
 
@@ -87,14 +86,17 @@ class Cart:
             return
 
         for item in cartItems:
-            productID = item[1]
-            quantity = item[2]
+            ProductID = item[1]
+            ProductQuantity = item[2]
 
             # Updates inventory
-            if self.inventoryDatabase:
-                self.inventoryDatabase.decreaseStock(productID, quantity)
+            if Inventory.databaseName:
+                Inventory.databaseName.decreaseStock(ProductID, ProductQuantity)
 
         query_delete = f"DELETE FROM {self.tableName} WHERE UserID = ?"
         self.cursor.execute(query_delete, (userID,))
         self.connection.commit()
         print(f"The checkout was completed for user {userID} and the cart is now empty.")
+
+
+    
