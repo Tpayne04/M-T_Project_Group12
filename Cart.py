@@ -17,7 +17,7 @@ class Cart:
     # Initially sets up the database / table names that will be used throughout the class to access the
     # appropriate database and table
     def Cart(self):
-        self.connection = sqlite3.connect(r"C:\Users\cader\OneDrive\Documents\Project\CartClass.db")
+        self.connection = sqlite3.connect("CartClass.db")
         self.cursor = self.connection.cursor()
         self.create_table()
         query = f"CREATE TABLE IF NOT EXISTS {self.tableName} (UserID INTEGER, ProductID TEXT, ProductQuantity INTEGER)"
