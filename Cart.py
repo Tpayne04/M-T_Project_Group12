@@ -43,6 +43,8 @@ class Cart:
                 print(f"Quantity: {item[2]}")
         else:
             print("The cart is empty.")
+
+        print()
     
 
     # This relies on the user viewing the inventory previously - from the main. Once they select a book, 
@@ -50,21 +52,37 @@ class Cart:
     def addToCart(self, userID, ProductID, ProductQuantity):
         self.connection = sqlite3.connect("CartClass.db")
         self.cursor = self.connection.cursor()
+
+        inventory = Inventory.Inventory()
+        inventory.connection = sqlite3.connect('Inventory.db')
+        inventory.cursor = inventory.connection.cursor()
+
+        testQuery = f"SELECT * FROM Inventory WHERE productID = ?"
+        inventory.cursor.execute(testQuery, (ProductID,))
+        results = inventory.cursor.fetchall()
+
+        if results:
+            query = f"INSERT INTO {self.tableName} (UserID, ProductID, Quantity) VALUES (?, ?, ?)"
+            self.cursor.execute(query, (userID, ProductID, ProductQuantity))
+            self.connection.commit()
+            print(f"ProductID {ProductID} was added to the cart for the user {userID}.")
+            print()
+
+        else:
+            print("Invalid product ID. Please try again.")
+            print()
         
-        query = f"INSERT INTO {self.tableName} (UserID, ProductID, Quantity) VALUES (?, ?, ?)"
-        self.cursor.execute(query, (userID, ProductID, ProductQuantity))
-        self.connection.commit()
-        print(f"ProductID {ProductID} was added to the cart for the user {userID}.")
+        
     
 
     # This relies on the user viewing the cart previously - from the main. Once they select a book to remove, 
     # this ISBN is used to remove an item form the user's cart
-    def removeFromCart(self, userID, ProductID, ProductQuantity):
+    def removeFromCart(self, userID, ProductID):
         self.connection = sqlite3.connect("CartClass.db")
         self.cursor = self.connection.cursor()
         
-        query = f"DELETE FROM {self.tableName} WHERE UserID = ? AND ProductID = ? AND Quantity = ?"
-        self.cursor.execute(query, (userID, ProductID, ProductQuantity))
+        query = f"DELETE FROM {self.tableName} WHERE UserID = ? AND ProductID = ?"
+        self.cursor.execute(query, (userID, ProductID))
         self.connection.commit()
         print(f"ProductID {ProductID} was removed from the cart for the user {userID}.")
 

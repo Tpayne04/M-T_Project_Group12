@@ -102,8 +102,7 @@ while (option != '4'):
             elif (cartOption == '3'):
                 username = user.getUserID()
                 product = input("Enter the ID of the product you want to remove from your cart: ")
-                quantity= input("How many do you want to remove: ")
-                cart.removeFromCart(username, product, quantity)
+                cart.removeFromCart(username, product)
 
             elif (cartOption == '4'):
                 username = user.getUserID()

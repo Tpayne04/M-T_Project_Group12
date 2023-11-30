@@ -75,7 +75,6 @@ class User:
     def logout(self, databaseName = "User.db", tableName = "Users"):
         # Connect to database
         self.connection = sqlite3.connect(databaseName)
-        print("DATABASE CONNECTED")
         self.cursor = self.connection.cursor()
 
         # Gets username
@@ -92,8 +91,8 @@ class User:
 
 
     def viewAccountInformation(self):
-        print(f"Username: {User.getUserID(User)}")
-        if User.getLoggedIn(User) == True:
+        print("Username: " + self.getUserID())
+        if self.getLoggedIn() == True:
             print("Status: Logged In")
         else:
             print("Status: Logged Out")
