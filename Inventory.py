@@ -8,7 +8,7 @@ class Inventory:
     def Inventory(self, databaseName='Inventory.db', tableName='Inventory'):
         self.databaseName = databaseName
         self.tableName = tableName
-        self.conn = sqlite3.connect(r"C:\Program Files\DB Browser for SQLite\Methods and Tools of Software Development 2023 folder\Inventory.db")
+        self.conn = sqlite3.connect(r"Inventory.db")
         self.cursor = self.conn.cursor()
     
         # Check if table already exists, it should, this code is almost redundant now. Leaving it in case inventory's database fails.
@@ -35,18 +35,27 @@ class Inventory:
         self.tableName = tableName
 
     def viewInventory(self):
-        self.cursor.execute(f"SELECT * FROM {self.tableName}")
+        self.conn = sqlite3.connect(r"Inventory.db")
+        self.cursor = self.conn.cursor()
+
+        self.cursor.execute(f"SELECT * FROM Inventory")
         rows = self.cursor.fetchall()
         for row in rows:
             print(row)
 
     def searchInventory(self, ProductID):
-        self.cursor.execute(f"SELECT * FROM {self.tableName} WHERE ProductID=?", (ProductID,))
+        self.conn = sqlite3.connect(r"Inventory.db")
+        self.cursor = self.conn.cursor()
+
+        self.cursor.execute(f"SELECT * FROM Inventory WHERE ProductID=?", (ProductID,))
         rows = self.cursor.fetchall()
         for row in rows:
             print(row)
 
-    def decreaseStock(self, ProductID):
-        self.cursor.execute(f"UPDATE {self.tableName} SET ProductQuantity = ProductQuantity - 1 WHERE ProductID=?", (ProductID,))
+    def decreaseStock(self, ProductID, Quantity):
+        self.conn = sqlite3.connect(r"Inventory.db")
+        self.cursor = self.conn.cursor()
+
+        self.cursor.execute(f"UPDATE Inventory SET ProductQuantity = ProductQuantity - {Quantity} WHERE ProductID=?", (ProductID,))
         self.conn.commit()
 

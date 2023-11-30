@@ -29,6 +29,9 @@ class Cart:
     # to display all the correct information on the inventory items - it just selectively shows the books in
     # the User's cart
     def viewCart(self, userID):
+        self.connection = sqlite3.connect("CartClass.db")
+        self.cursor = self.connection.cursor()
+
         query = f"SELECT * FROM {self.tableName} WHERE UserID = ?"
         self.cursor.execute(query, (userID,))
         cartItems = self.cursor.fetchall()
@@ -45,14 +48,10 @@ class Cart:
     # This relies on the user viewing the inventory previously - from the main. Once they select a book, 
     # this ISBN is used to add an item to the appropiate cart
     def addToCart(self, userID, ProductID, ProductQuantity):
-        try:
-            ProductID = input("Enter the ProductID of the book you want to add to the cart: ")
-            ProductQuantity = int(input(f"How many units of ProductID {ProductID} do you want to add to the cart? "))
-        except ValueError:
-            print("Please enter a valid number for the quantity.")
-            return
+        self.connection = sqlite3.connect("CartClass.db")
+        self.cursor = self.connection.cursor()
         
-        query = f"INSERT INTO {self.tableName} (UserID, ProductID, ProductQuantity) VALUES (?, ?, ?)"
+        query = f"INSERT INTO {self.tableName} (UserID, ProductID, Quantity) VALUES (?, ?, ?)"
         self.cursor.execute(query, (userID, ProductID, ProductQuantity))
         self.connection.commit()
         print(f"ProductID {ProductID} was added to the cart for the user {userID}.")
@@ -61,12 +60,8 @@ class Cart:
     # This relies on the user viewing the cart previously - from the main. Once they select a book to remove, 
     # this ISBN is used to remove an item form the user's cart
     def removeFromCart(self, userID, ProductID, ProductQuantity):
-        try:
-            ProductID = input("Enter the ProductID of the book you want to remove from the cart: ")
-            ProductQuantity = int(input(f"How many units of ProductID {ProductID} do you want to remove from the cart? "))
-        except ValueError:
-            print("Please enter a valid number for the quantity.")
-            return
+        self.connection = sqlite3.connect("CartClass.db")
+        self.cursor = self.connection.cursor()
         
         query = f"DELETE FROM {self.tableName} WHERE UserID = ? AND ProductID = ? AND Quantity = ?"
         self.cursor.execute(query, (userID, ProductID, ProductQuantity))
@@ -77,6 +72,9 @@ class Cart:
     # The user checks out - this removes all their cart items. It also calls the inventory class function
     # to decrease the stock of the books by the correct amount the user bought (prior to remove them from the cart)
     def checkOut(self, userID):
+        self.connection = sqlite3.connect("CartClass.db")
+        self.cursor = self.connection.cursor()
+
         querySelect = f"SELECT * FROM {self.tableName} WHERE UserID = ?"
         self.cursor.execute(querySelect, (userID,))
         cartItems = self.cursor.fetchall()
@@ -84,14 +82,18 @@ class Cart:
         if not cartItems:
             print("The cart is empty.")
             return
+        
+        inventory = Inventory.Inventory()
+        inventory.connection = sqlite3.connect('Inventory.db')
+        inventory.cursor = self.connection.cursor()
 
         for item in cartItems:
             ProductID = item[1]
             ProductQuantity = item[2]
 
             # Updates inventory
-            if Inventory.databaseName:
-                Inventory.databaseName.decreaseStock(ProductID, ProductQuantity)
+            
+            inventory.decreaseStock(ProductID, ProductQuantity)
 
         query_delete = f"DELETE FROM {self.tableName} WHERE UserID = ?"
         self.cursor.execute(query_delete, (userID,))
